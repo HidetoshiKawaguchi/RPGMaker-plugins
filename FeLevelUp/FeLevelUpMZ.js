@@ -16,8 +16,9 @@
 /*:
  * @target MZ
  * @base PluginBaseFunction
- * @plugindesc ファイアーエムブレム風レベルアッププラグイン
+ * @plugindesc ファイアーエムブレム風レベルアッププラグイン(MZ版)
  * @author えーしゅん
+ * @url https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/master/FeLevelUp/FeLevelUpMZ.js
  *
  * @param DisplayLevelUp
  * @text レベルアップ時表示ON/OFF
@@ -42,7 +43,7 @@
  * @default 1
  * @type number
  *
- * @help FeLevelUpMV.js [ファイアーエムブレム風レベルアッププラグイン]
+ * @help FeLevelUpMZ.js [ファイアーエムブレム風レベルアッププラグイン(MZ版)]
  *
  * このプラグインはファイアーエムブレム風のレベルアップ機能を実現します。
  * アクター毎に設定した成長率(確率)に応じて、レベルアップ時にランダムに
@@ -99,18 +100,8 @@
  * ```
  *
  * ### アクターのパラメータを初期化する
- * 以下のプラグインコマンドを実行することにより、指定したアクターのパラメータを
- * 初期化することができます。
- * ```
- * FE_INITIALIZE_PARAMS <アクターID>
- * ```
- * `FE_INITIALIZE_PARAMS`は`FE_パラメータ初期化でも代替できます。
- *
- * 例えば、以下のように書くとID1のアクターのパラメータを初期化することが
- * できます。
- * ```
- * FE_INITIALIZE_PARAMS 1
- * ```
+ * プラグインコマンドの`パラメータ初期化`を実行することにより、指定した
+ * アクターのパラメータを初期化することができます。
  *
  * このプラグインコマンドだけではレベルは下がらないので、
  * 必要に応じてツクールのイベントコマンド等で下げてください。

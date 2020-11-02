@@ -2,6 +2,15 @@
 このプラグインはファイアーエムブレム風のレベルアップ機能を実現します。
 アクター毎に設定した成長率(確率)に応じて、レベルアップ時にランダムにパラメータがアップするようになります。
 
+## ダウンロード方法
+RPGツクールMV/MZ版の両方を用意しています。
+以下のリンクで右クリック→「名前をつけて保存」でダウンロードしてください。
+
+- MV版: [FeLevelUpMV.js](https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/master/FeLevelUp/FeLevelUpMV.js)
+- MZ版: [FeLevelUpMZ.js](https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/master/FeLevelUp/FeLevelUpMZ.js)
+
+
+
 ## 使い方
 アクター毎にパラメータの初期値と成長率を設定する必要があります。
 
@@ -50,7 +59,7 @@
 ```
 
 
-### アクターのパラメータを初期化する
+### アクターのパラメータを初期化する(RPGツクールMV)
 以下のプラグインコマンドを実行することにより、指定したアクターのパラメータを初期化することができます。
 ```
 FE_INITIALIZE_PARAMS <アクターID>
@@ -63,6 +72,9 @@ FE_INITIALIZE_PARAMS 1
 ```
 
 このプラグインコマンドだけではレベルは下がらないので、必要に応じてツクールのイベントコマンド等で下げてください。
+
+### アクターのパラメータを初期化する(RPGツクールMZ)
+プラグインコマンドの`パラメータ初期化`を実行することにより、指定したアクターのパラメータを初期化することができます。
 
 ## 連絡先/Author
 えーしゅん
