@@ -14,6 +14,8 @@
 //=============================================================================
 //
 /*:
+ * @target MZ
+ * @base PluginBaseFunction
  * @plugindesc ファイアーエムブレム風レベルアッププラグイン
  * @author えーしゅん
  *
@@ -30,6 +32,15 @@
  *(%1:パラメータ名,%2:アップ前,%3:アップ後,%4:アップ値)
  * @default %1: %2 -> %3 (+%4)
  * @type string
+ *
+ * @command INITIALIZE_PARAMS
+ * @text パラメータ初期化
+ * @desc アクターのパラメータを初期化する。
+ * @arg actorId
+ * @text アクターID
+ * @desc 初期化対象のアクターID
+ * @default 1
+ * @type number
  *
  * @help FeLevelUpMV.js [ファイアーエムブレム風レベルアッププラグイン]
  *
@@ -139,7 +150,7 @@
         // PluginManager.setParameters(pluginName, parameters);
         return parameters;
     };
-    const params = createPluginParameter('FeLevelUpMV');
+    const params = createPluginParameter('FeLevelUpMZ');
 
     //=============================================================================
     // 汎用処理関数を定義
@@ -192,6 +203,11 @@
             this[pluginCommandMethod](actorId);
         }
     };
+
+    const script = document.currentScript;
+    PluginManagerEx.registerCommand(script, 'INITIALIZE_PARAMS', function(args) {
+        this.callInitializeParams(args.actorId);
+    });
     Game_Interpreter.prototype.callInitializeParams = function(actorId) {
         var actor = $gameActors.actor(actorId);
         if(actor) {
@@ -289,7 +305,7 @@
         } else {
             var display = $gameVariables.value(params.DisplayLevelUp);
         }
-        if (display && this._feParams != undefined) { // 設定されていない場合
+        if (display && this._feParams != undefined) {
             var prevFeParams = this._feParams.map(p => p);
             _Game_Actor_ChangeExp.apply(this, arguments);
             var nextFeParams = this._feParams.map(p => p);
