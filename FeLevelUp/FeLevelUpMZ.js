@@ -1,5 +1,5 @@
 //=============================================================================
-// ASYUN_LevelUpWithRandom.js
+// FeLevelUpMZ.js
 // ----------------------------------------------------------------------------
 // (C) 2020 えーしゅん
 // This software is released under the MIT License.
@@ -18,7 +18,7 @@
  * @base PluginBaseFunction
  * @plugindesc ファイアーエムブレム風レベルアッププラグイン(MZ版)
  * @author えーしゅん
- * @url https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/master/FeLevelUp/FeLevelUpMZ.js
+ * @url https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/main/FeLevelUp/FeLevelUpMZ.js
  *
  * @param DisplayLevelUp
  * @text レベルアップ時表示ON/OFF

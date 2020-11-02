@@ -6,8 +6,8 @@
 RPGツクールMV/MZ版の両方を用意しています。
 以下のリンクで右クリック→「名前をつけて保存」でダウンロードしてください。
 
-- MV版: [FeLevelUpMV.js](https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/master/FeLevelUp/FeLevelUpMV.js)
-- MZ版: [FeLevelUpMZ.js](https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/master/FeLevelUp/FeLevelUpMZ.js)
+- MV版: [FeLevelUpMV.js](https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/main/FeLevelUp/FeLevelUpMV.js)
+- MZ版: [FeLevelUpMZ.js](https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/main/FeLevelUp/FeLevelUpMZ.js)
 
 
 
