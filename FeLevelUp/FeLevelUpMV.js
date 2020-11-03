@@ -1,5 +1,5 @@
 //=============================================================================
-// FeLevelUpMZ.js
+// FeLevelUpMV.js
 // ----------------------------------------------------------------------------
 // (C) 2020 えーしゅん
 // This software is released under the MIT License.
@@ -289,7 +289,7 @@
         } else {
             var display = $gameVariables.value(params.DisplayLevelUp);
         }
-        if (display && this._feParams != undefined) { // 設定されていない場合
+        if (display && this._feParams != undefined) {
             var prevFeParams = this._feParams.map(p => p);
             _Game_Actor_ChangeExp.apply(this, arguments);
             var nextFeParams = this._feParams.map(p => p);
