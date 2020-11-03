@@ -6,6 +6,7 @@
 // http://opensource.org/licenses/mit-license.php
 // ----------------------------------------------------------------------------
 // Version
+// 1.0.1 2020/11/03 古いバージョンの場合エラーで動作停止するバグを修正
 // 1.0.0 2020/11/02 初版
 // ----------------------------------------------------------------------------
 // [Blog]   : https://taikai-kobo.hatenablog.com
@@ -172,7 +173,7 @@
         if (strGrowthRates == undefined) {
             strGrowthRates = meta[jaKey] ? meta[jaKey] : '';
         }
-        var growthRates = strGrowthRates.split(',').map(p => Number(p));
+        var growthRates = strGrowthRates.split(',').map(Number);
         growthRates = checkParams(growthRates) ? growthRates : new Array(8).fill(0);
         return growthRates;
     }
@@ -211,7 +212,7 @@
             if (strParams == undefined) {
                 strParams = meta[jaKey] ? meta[jaKey] : ''
             }
-            var params = strParams.split(',').map(p => Number(p));
+            var params = strParams.split(',').map(Number);
             params = checkParams(params) ? params : [1, 0, 1, 1, 1, 1, 1, 1];
             this._feParams = params;
         }  // 初期パラメータが設定されていなければ何もしない
@@ -221,13 +222,19 @@
         var meta = $dataActors[this.actorId()].meta;
         var baseGrowth = parseGrowthRates(meta);
         var classGrowth = parseGrowthRates(this.currentClass().meta);
-        var weaponGrowthList = this.weapons().map(w => parseGrowthRates(w.meta));
-        var armorGrowthList = this.armors().map(a => parseGrowthRates(a.meta));
+        var weaponGrowthList = this.weapons().map(function(w){
+            return parseGrowthRates(w.meta);
+        });
+        var armorGrowthList = this.armors().map(function(a){
+            return parseGrowthRates(a.meta);
+        });
 
         var growthRates = addArray(baseGrowth, classGrowth);
         growthRates = weaponGrowthList.reduce(addArray, growthRates);
         growthRates = armorGrowthList.reduce(addArray, growthRates);
-        growthRates = growthRates.map(g => Math.max(g, 0));
+        growthRates = growthRates.map(function(g){
+            return Math.max(g, 0);
+        });
         return growthRates;
     };
 
@@ -290,9 +297,9 @@
             var display = $gameVariables.value(params.DisplayLevelUp);
         }
         if (display && this._feParams != undefined) {
-            var prevFeParams = this._feParams.map(p => p);
+            var prevFeParams = this._feParams.clone();
             _Game_Actor_ChangeExp.apply(this, arguments);
-            var nextFeParams = this._feParams.map(p => p);
+            var nextFeParams = this._feParams.clone();
             if (show) {
                 this.displayFeParamsUp(prevFeParams, nextFeParams);
             }
