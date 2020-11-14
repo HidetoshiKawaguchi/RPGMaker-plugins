@@ -6,6 +6,7 @@
 // http://opensource.org/licenses/mit-license.php
 // ----------------------------------------------------------------------------
 // Version
+// 1.1.0 2020/11/14 PluginBaseFunctionがなくても動くように修正
 // 1.0.0 2020/11/02 初版
 // ----------------------------------------------------------------------------
 // [Blog]   : https://taikai-kobo.hatenablog.com
@@ -15,7 +16,6 @@
 //
 /*:
  * @target MZ
- * @base PluginBaseFunction
  * @plugindesc ファイアーエムブレム風レベルアッププラグイン(MZ版)
  * @author えーしゅん
  * @url https://raw.githubusercontent.com/HidetoshiKawaguchi/RPGMaker-plugins/main/FeLevelUp/FeLevelUpMZ.js
@@ -182,29 +182,15 @@
     //=============================================================================
     //  プラグインコマンドの追加
     //=============================================================================
-    var pluginCommandMap = new Map();
-    pluginCommandMap.set(prefix + 'パラメータ初期化', 'callInitializeParams');
-    pluginCommandMap.set(prefix + 'INITIALIZE_PARAMS', 'callInitializeParams');
-    var _Game_Interpreter_pluginCommand = Game_Interpreter.prototype.pluginCommand;
-    Game_Interpreter.prototype.pluginCommand = function(command, args) {
-        _Game_Interpreter_pluginCommand.apply(this, arguments);
-        var pluginCommandMethod = pluginCommandMap.get(command.toUpperCase());
-        if (pluginCommandMethod) {
-            var actorId = Number(args[0]);
-            this[pluginCommandMethod](actorId);
-        }
-    };
-
-    const script = document.currentScript;
-    PluginManagerEx.registerCommand(script, 'INITIALIZE_PARAMS', function(args) {
-        this.callInitializeParams(args.actorId);
-    });
-    Game_Interpreter.prototype.callInitializeParams = function(actorId) {
+    const callInitializeParams = function(actorId) {
         var actor = $gameActors.actor(actorId);
         if(actor) {
             actor.initializeParams();
         }
     };
+    PluginManager.registerCommand('FeLevelUpMZ', 'INITIALIZE_PARAMS', function(args) {
+        callInitializeParams(Number(args.actorId));
+    });
 
     //=============================================================================
     // レベルアップ時の判定・上昇値の計算をする処理
