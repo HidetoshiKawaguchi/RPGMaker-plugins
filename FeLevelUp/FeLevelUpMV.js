@@ -325,7 +325,7 @@
         } else if (pluginParams.DisplayLevelUp === 0) {
             var display = true;
         } else {
-            var display = $gameVariables.value(pluginParams.DisplayLevelUp);
+            var display = $gameSwitches.value(pluginParams.DisplayLevelUp);
         }
         if (display && this._feParams != undefined) {
             var prevFeParams = this._feParams.clone();
