@@ -32,6 +32,17 @@
  * @default %1: %2 -> %3 (+%4)
  * @type string
  *
+ * @param Alart
+ * @text 警告表示(デバッグ用)
+ * @desc デバッグ用。パラメータ設定に誤りがある場合、
+ *ゲーム開始時に警告を出すか
+ * @default true
+ * @type select
+ * @option はい
+ * @value true
+ * @option いいえ
+ * @value false
+ *
  * @help FeLevelUpMV.js [ファイアーエムブレム風レベルアッププラグイン(MV版)]
  *
  * このプラグインはファイアーエムブレム風のレベルアップ機能を実現します。
@@ -50,11 +61,11 @@
  * <FE_INIT_PARAMS: 最大HP, 最大MP, 攻撃力, 防御力, 魔法力, 魔法防御, 敏捷性, 運>
  * ```
  * カンマ区切りで、数値を記入してください。
- * `FE_INIT_PARAMETERS`は`FE_初期パラメータ`でも代用できます。
+ * `FE_INIT_PARAMS`は`FE_初期パラメータ`でも代用できます。
  *
  * 例えば、以下のように書きます。
  * ```
- * <FE_INIT_PARAMS: 20, 12, 9, 5, 7, 2, 1, 8, 6>
+ * <FE_INIT_PARAMS: 20, 12, 9, 5, 7, 2, 1, 8>
  * ```
  * これで、このアクターのパラメータの初期値は最大HPが20, 最大MPが12,
  * 攻撃力が9, 防御力が5, 魔法力が7, 魔法防御が1, 敏捷性が8, 運が6になります。
@@ -140,7 +151,7 @@
         // PluginManager.setParameters(pluginName, parameters);
         return parameters;
     };
-    const params = createPluginParameter('FeLevelUpMV');
+    const pluginParams = createPluginParameter('FeLevelUpMV');
 
     //=============================================================================
     // 汎用処理関数を定義
@@ -166,15 +177,27 @@
         return true;
     }
 
-    function parseGrowthRates(meta) {
+    function parseGrowthRates(meta, alartInfo) {
         var enKey = prefix + 'GROWTH_RATES';
         var jaKey = prefix + '成長率'
         var strGrowthRates = meta[enKey];
         if (strGrowthRates == undefined) {
             strGrowthRates = meta[jaKey] ? meta[jaKey] : '';
         }
+        if (strGrowthRates == '') { // 設定されていないならすべて0で返す
+            return new Array(8).fill(0);
+        }
+        // 以降，構文チェック
         var growthRates = strGrowthRates.split(',').map(Number);
-        growthRates = checkParams(growthRates) ? growthRates : new Array(8).fill(0);
+        if (checkParams(growthRates) == false) {
+            if (pluginParams.Alart) {
+                $gameMessage.add('【警告: FeLevelUp】');
+                $gameMessage.add(alartInfo + 'の成長率設定に誤りがあります。');
+                $gameMessage.add('あなたの設定したのは"' + strGrowthRates + '"です。');
+                $gameMessage.add('整数値をちょうど８つ並べてください。');
+            }
+            growthRates = new Array(8).fill(0);
+        }
         return growthRates;
     }
 
@@ -213,20 +236,28 @@
                 strParams = meta[jaKey] ? meta[jaKey] : ''
             }
             var params = strParams.split(',').map(Number);
-            params = checkParams(params) ? params : [1, 0, 1, 1, 1, 1, 1, 1];
+            if (checkParams(params) == false) {
+                if (pluginParams.Alart) {
+                    $gameMessage.add('【警告: FeLevelUp】');
+                    $gameMessage.add('ID' + this.actorId() + 'のアクターの初期パラメータ設定に誤りがあります。');
+                    $gameMessage.add('あなたの設定したのは"' + strParams + '"です。');
+                    $gameMessage.add('整数値をちょうど８つ並べてください。');
+                }
+                params = [1, 1, 1, 1, 1, 1, 1, 1];
+            }
             this._feParams = params;
         }  // 初期パラメータが設定されていなければ何もしない
     };
 
     Game_Actor.prototype.growthRates = function() {
         var meta = $dataActors[this.actorId()].meta;
-        var baseGrowth = parseGrowthRates(meta);
-        var classGrowth = parseGrowthRates(this.currentClass().meta);
+        var baseGrowth = parseGrowthRates(meta, 'ID' + this.actorId() + 'のアクター');
+        var classGrowth = parseGrowthRates(this.currentClass().meta, 'ID' + this.currentClass().id + 'の職業');
         var weaponGrowthList = this.weapons().map(function(w){
-            return parseGrowthRates(w.meta);
+            return parseGrowthRates(w.meta, 'ID' + w.id + 'の武器');
         });
         var armorGrowthList = this.armors().map(function(a){
-            return parseGrowthRates(a.meta);
+            return parseGrowthRates(a.meta, 'ID' + a.id + 'の防具');
         });
 
         var growthRates = addArray(baseGrowth, classGrowth);
@@ -274,7 +305,7 @@
     // レベルアップ時の表示に関する処理(簡易)
     //=============================================================================
     Game_Actor.prototype.displayFeParamsUp = function(prevFeParams, nextFeParams) {
-        var template = params.TemplateDisplayLevelUp;
+        var template = pluginParams.TemplateDisplayLevelUp;
         for (let i=0; i < prevFeParams.length; i++) {
             let prev = prevFeParams[i];
             let next = nextFeParams[i];
@@ -289,12 +320,12 @@
 
     var _Game_Actor_ChangeExp = Game_Actor.prototype.changeExp;
     Game_Actor.prototype.changeExp = function(exp, show) {
-        if (params.DisplayLevelUp < 0) {
+        if (pluginParams.DisplayLevelUp < 0) {
             var display = false;
-        } else if (params.DisplayLevelUp === 0) {
+        } else if (pluginParams.DisplayLevelUp === 0) {
             var display = true;
         } else {
-            var display = $gameVariables.value(params.DisplayLevelUp);
+            var display = $gameVariables.value(pluginParams.DisplayLevelUp);
         }
         if (display && this._feParams != undefined) {
             var prevFeParams = this._feParams.clone();
