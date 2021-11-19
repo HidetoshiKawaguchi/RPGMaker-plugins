@@ -121,6 +121,51 @@
  * 必要に応じてツクールのイベントコマンド等で下げてください。
  *
  *
+ * ### オリジナルの追加機能（上級者向け）
+ * ファイアーエムブレムでは、レベルアップ時のパラメータの増加値は１ですが、
+ * このプラグインでは 1 以外にも変更することができます。
+ *
+ * 例えば、以下のようにアクターのメモ欄に記述することで、
+ * 最大HPの増加値が 2 になります。
+ * ```
+ * <FE_GAIN_MAXHP: 2>
+ * ```
+ * `MAXHP`は`最大HP`でも代用できます。( `<FE_GAIN_最大HP: 2>` )
+ *
+ * その他のパラメータについても、以下のように同様に設定が可能です。
+ * - 最大MP: `<FE_GAIN_MAXMP: 2>`
+ * - 攻撃力: `<FE_GAIN_ATTACK: 2>`
+ * - 防御力: `<FE_GAIN_DEFENSE: 2>`
+ * - 魔法力: `<FE_GAIN_M.ATTACK: 2>`
+ * - 魔法防御: `<FE_GAIN_M.DEFENSE: 2>`
+ * - 敏捷性: `<FE_GAIN_AGILITY: 2>`
+ * - 運: `<FE_GAIN_LUCK: 2>`
+ * `MAXMP`は`最大MP`, `ATTACK`は`攻撃力`, `DEFENSE`は`防御力`,
+ * `M.ATTACK`は`魔法力`, `M.DEFENSE`は`魔法防御`,
+ * `AGILITY`は`敏捷性`, `LUCK`は`運`でも代用できます。
+ *
+ * 更に、それぞれのパラメータで、複数の増加値を設定できます。
+ * その場合、それら複数の増加値からランダムに選ばれます。
+ *
+ * 例えば、最大HPの増加値を1, 2, 3のいずれかからランダムに増加させたい場合は、
+ * 以下のようにアクターのメモ欄に記述してください。
+ * ```
+ * <FE_GAIN_MAXHP: 1, 2, 3>
+ * ```
+ * 最大HPの成長率が50%に設定されていた場合、
+ * 「50%の確率で、最大HPが1か2か3アップする」という意味になります。
+ *
+ * 同じ数値を複数設定することも可能です。
+ * ```
+ * <FE_GAIN_MAXHP: 1, 1, 1, 1, 2>
+ * ```
+ * 1が選ばれる確率が80%で、2が選ばれる確率が20%になります。
+ *
+ * この増加値は、成長率と同様に職業・武器・防具のメモ欄にも設定可能です。
+ * その場合、それぞれで増加値の判定がされ、最後に合算された値が増加します。
+ *
+ *
+ *
  * ## 連絡先/Author
  * えーしゅん
  * - Twitter:  https://twitter.com/Asyun3i9t
@@ -205,6 +250,37 @@
         return growthRates;
     }
 
+    function convertParamIdToKeys(paramId) {
+        var keys = [
+            ['MAXHP', '最大HP', 'HP'],
+            ['MAXMP', '最大MP', 'MP'],
+            ['ATTACK', '攻撃力'],
+            ['DEFENSE', '防御力'],
+            ['M.ATTACK', '魔法力'],
+            ['M.DEFENSE', '魔法防御'],
+            ['AGILITY', '敏捷性'],
+            ['LUCK', '運']
+        ][paramId];
+        if (keys == undefined) {
+            return [];
+        }
+        return keys;
+    }
+
+    function parseGainRoulette(meta, paramId) {
+        var keys = convertParamIdToKeys(paramId).map(function(key) {
+            return prefix + 'GAIN_' + key;
+        });
+        var strGainRoulette = '';
+        for (var i=0; i < keys.length; i++) {
+            var strGainRoulette = meta[keys[i]] ? meta[keys[i]] : strGainRoulette;
+        }
+        if (strGainRoulette == '') {
+            return [];
+        }
+        return strGainRoulette.split(',').map(Number);
+    }
+
     //=============================================================================
     //  プラグインコマンドの追加
     //=============================================================================
@@ -273,6 +349,35 @@
         return growthRates;
     };
 
+    Game_Actor.prototype.rouletteGain = function(paramId) {
+        var meta = $dataActors[this.actorId()].meta;
+        var baseRoulette = parseGainRoulette(meta, paramId);
+        if (baseRoulette.length == 0) baseRoulette = [1];
+        var classRoulette = parseGainRoulette(this.currentClass().meta, paramId);
+        if (classRoulette.length == 0) classRoulette = [0];
+        var weaponRouletteList = this.weapons().map(function(w){
+            var gr = parseGainRoulette(w.meta, paramId);
+            if (gr.length == 0) gr = [0];
+            return gr;
+        });
+        var armorRouletteList = this.armors().map(function(a){
+            var gr = parseGainRoulette(a.meta, paramId);
+            if (gr.length == 0) gr = [0];
+            return gr;
+        });
+        var gain = 0;
+        gain += baseRoulette[Math.floor(Math.random() * baseRoulette.length)];
+        gain += classRoulette[Math.floor(Math.random() * classRoulette.length)];
+        for (var i=0; i < weaponRouletteList.length; i++) {
+            gain += weaponRouletteList[i][Math.floor(Math.random() * weaponRouletteList[i].length)];
+        }
+        for (var i=0; i < armorRouletteList.length; i++) {
+            gain += armorRouletteList[i][Math.floor(Math.random() * armorRouletteList[i].length)];
+        }
+        console.log(gain, paramId)
+        return gain;
+    };
+
     var _Game_Actor_ParamBase = Game_Actor.prototype.paramBase;
     Game_Actor.prototype.paramBase = function(paramId) {
         if (this._feParams == undefined) {
@@ -297,9 +402,12 @@
             var growth = this.growthRates();
             // 判定と反映
             for (var i=0; i < this._feParams.length; i++) {
-                this._feParams[i] += Math.max(Math.floor(growth[i] / 100), 0);
+                while (growth[i] >= 100) {
+                    growth[i] -= 100;
+                    this._feParams[i] += this.rouletteGain(i);
+                }
                 if (Math.randomInt(100) < (growth[i] % 100)) {
-                    this._feParams[i] += 1;
+                    this._feParams[i] += this.rouletteGain(i);
                 }
             }
         }
