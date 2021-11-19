@@ -29,6 +29,13 @@
  * @default 0
  * @type string
  *
+ * @param ShowFace
+ * @text 顔画像の表示ON/OFF
+ * @desc 顔画像の表示ON/OFFを切り替えます。
+ *(-1: 非表示, 0:表示, 1以上:スイッチ番号)
+ * @default 0
+ * @type string
+ *
  * @param TemplateDisplayLevelUp
  * @text 表示テンプレート
  * @desc レベルアップ時のパラメータアップ表示テンプレート
@@ -444,6 +451,16 @@
             _Game_Actor_ChangeExp.apply(this, arguments);
             var nextFeParams = this._feParams.clone();
             if (show) {
+                if (pluginParams.ShowFace < 0) {
+                    var showFace = false;
+                } else if (pluginParams.ShowFace === 0) {
+                    var showFace = true;
+                } else {
+                    var showFace = $gameSwitches.value(pluginParams.ShowFace);
+                }
+                if (showFace) {
+                    $gameMessage.setFaceImage(this.faceName(), this.faceIndex());
+                }
                 this.displayFeParamsUp(prevFeParams, nextFeParams);
             }
         }
