@@ -6,6 +6,9 @@
 // http://opensource.org/licenses/mit-license.php
 // ----------------------------------------------------------------------------
 // Version
+// 1.4.0 2023/10/06 以下の更新を行いました。
+// ・ステートにも成長率を設定可能にした
+// ・不要なconsole.logを削除
 // 1.3.0 2021/11/20 以下の機能を追加した。
 // ・レベルアップの増加値を変更する機能
 // ・レベルアップ時の表示に顔画像を追加する機能
@@ -76,7 +79,7 @@
  *
  * ## 使い方
  * アクター毎にパラメータの初期値と成長率を設定する必要があります。
- * オプションとして、職業・武器・防具にも成長率を設定できます。
+ * オプションとして、職業・武器・防具・ステートにも成長率を設定できます。
  * その場合、アクターに設定した成長率に補正を加えることになります。
  *
  * ### アクターのパラメータの初期値を設定する(必須)
@@ -114,8 +117,8 @@
  * そして、あまりの確率で1上がるかの判定を行います。
  * 例えば、230と設定した場合は、必ず2は上がり、更に30%の確率で1上がります。
  *
- * ### 職業・武器・防具に成長率の補正を設定する
- * 職業・武器・防具にアクターの成長率への補正を設定することができます。
+ * ### 職業・武器・防具・ステートに成長率の補正を設定する
+ * 職業・武器・防具・ステートにアクターの成長率への補正を設定することができます。
  * 記法はアクター毎の成長率と同じです。
  * マイナスの値を設定して、成長率を低下させることもできます。
  * 例えば、職業のメモ欄に以下のように設定すると、攻撃力の成長率が10%上がり、
@@ -172,7 +175,7 @@
  * ```
  * 1が選ばれる確率が80%で、2が選ばれる確率が20%になります。
  *
- * この増加値は、成長率と同様に職業・武器・防具のメモ欄にも設定可能です。
+ * この増加値は、成長率と同様に職業・武器・防具・ステートのメモ欄にも設定可能です。
  * その場合、それぞれで増加値の判定がされ、最後に合算された値が増加します。
  *
  *
@@ -341,10 +344,14 @@
         var armorGrowthList = this.armors().map(function(a){
             return parseGrowthRates(a.meta, 'ID' + a.id + 'の防具');
         });
+        var stateGrowthList = this.states().map(function(s){
+            return parseGrowthRates(s.meta, 'ID' + s.id + 'のステート');
+        })
 
         var growthRates = addArray(baseGrowth, classGrowth);
         growthRates = weaponGrowthList.reduce(addArray, growthRates);
         growthRates = armorGrowthList.reduce(addArray, growthRates);
+        growthRates = stateGrowthList.reduce(addArray, growthRates);
         growthRates = growthRates.map(function(g){
             return Math.max(g, 0);
         });
@@ -367,6 +374,11 @@
             if (gr.length == 0) gr = [0];
             return gr;
         });
+        var stateRouletteList = this.states().map(function(s){
+            var gr = parseGainRoulette(s.meta, paramId);
+            if (gr.length == 0) gr = [0];
+            return gr;
+        });
         var gain = 0;
         gain += baseRoulette[Math.floor(Math.random() * baseRoulette.length)];
         gain += classRoulette[Math.floor(Math.random() * classRoulette.length)];
@@ -376,7 +388,9 @@
         for (var i=0; i < armorRouletteList.length; i++) {
             gain += armorRouletteList[i][Math.floor(Math.random() * armorRouletteList[i].length)];
         }
-        console.log(gain, paramId)
+        for (var i=0; i < stateRouletteList.length; i++) {
+            gain += stateRouletteList[i][Math.floor(Math.random() * stateRouletteList[i].length)];
+        }
         return gain;
     };
 
